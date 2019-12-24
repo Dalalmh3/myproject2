@@ -32,7 +32,11 @@ def signup(request):
 def index(request):
     context= {
         "all_products": Product.objects.all(),
+        "isLogged": True,
     }
+
+    if request.session.is_empty():
+        context['isLogged'] = False
     return render(request, "MarketPlaceApp/index.html", context ) 
 
 
@@ -40,6 +44,8 @@ def index(request):
  
 @login_required()
 def Add_Product(request):
+    if request.session.is_empty():
+        request.session['user'] = request.user
     if request.method == "POST":
         form = ProductForm (request.POST, request.FILES)
         if form.is_valid():
@@ -51,6 +57,7 @@ def Add_Product(request):
     return render(request, 'MarketPlaceApp/add_product.html',{'form':form})
 
 def logout(request):
+    request.session.clear()
     django_logout(request)
     return redirect('/')
   
@@ -60,15 +67,5 @@ def login(request):
     form = UserCreationForm()
     return redirect('/accounts/login')
 
-
-# def login(request):
-#     if request.method == 'POST':
-#         form = UserCreationForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('/Add_Product')
-#     else:
-#         form = UserCreationForm()
-#     return redirect('/accounts/login')
 
    
